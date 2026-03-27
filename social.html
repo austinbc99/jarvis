@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#D32F2F">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="72x72" href="icon-72.png">
+<link rel="apple-touch-icon" sizes="96x96" href="icon-96.png">
+<link rel="apple-touch-icon" sizes="128x128" href="icon-128.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icon-144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<meta name="apple-touch-fullscreen" content="yes">
+<title>Jarvis — Social Intel</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #D32F2F;
+  --red-bright: #FF3B3B;
+  --red-dim: rgba(211,47,47,0.12);
+  --red-glow: rgba(211,47,47,0.06);
+  --white: #F0F0F0;
+  --white-dim: rgba(240,240,240,0.65);
+  --white-muted: rgba(240,240,240,0.35);
+  --white-faint: rgba(240,240,240,0.06);
+  --bg: #080808;
+  --bg2: #0F0F0F;
+  --bg3: #161616;
+  --border: rgba(240,240,240,0.07);
+  --border-red: rgba(211,47,47,0.28);
+  --green: #00E676;
+  --green-dim: rgba(0,230,118,0.1);
+  --yellow: #FFD600;
+  --yellow-dim: rgba(255,214,0,0.1);
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--white);font-family:var(--font-body);min-height:100vh}
+
+/* scanline */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.015) 3px,rgba(0,0,0,0.015) 4px);pointer-events:none;z-index:9999}
+
+/* ── Header ── */
+#hdr{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:54px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.hdr-left{display:flex;align-items:center;gap:14px}
+.logo{width:32px;height:32px;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:900;font-size:13px;clip-path:polygon(0 0,100% 0,100% 72%,82% 100%,0 100%);color:#fff}
+.hdr-title{font-family:var(--font-display);font-size:20px;font-weight:900;letter-spacing:3px}
+.hdr-sub{font-family:var(--font-mono);font-size:9px;color:var(--white-muted);letter-spacing:1.5px;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.run-btn{display:flex;align-items:center;gap:7px;background:var(--red);border:none;color:#fff;font-family:var(--font-display);font-size:12px;font-weight:800;letter-spacing:2px;padding:8px 18px;cursor:pointer;transition:opacity .2s;position:relative;overflow:hidden}
+.run-btn:hover{opacity:.85}
+.run-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transform:translateX(-100%);transition:transform .4s}
+.run-btn:hover::before{transform:translateX(100%)}
+.schedule-pill{font-family:var(--font-mono);font-size:9px;padding:4px 10px;border:1px solid var(--border);color:var(--white-muted);letter-spacing:1px}
+.dot-pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:dpulse 2s infinite;display:inline-block;margin-right:4px}
+@keyframes dpulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,230,118,.4)}50%{opacity:.7;box-shadow:0 0 0 4px rgba(0,230,118,0)}}
+
+/* ── Layout ── */
+#layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 54px)}
+
+/* ── Left panel ── */
+#left{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.panel-section{padding:16px;border-bottom:1px solid var(--border)}
+.panel-label{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--white-muted);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.panel-label::before{content:'';display:block;width:2px;height:10px;background:var(--red)}
+
+/* our account */
+.our-account{background:var(--bg3);border:1px solid var(--border-red);padding:14px;margin-bottom:10px}
+.our-handle{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--white);letter-spacing:1px}
+.our-followers{font-family:var(--font-display);font-size:36px;font-weight:900;color:var(--red-bright);line-height:1;margin:6px 0 2px}
+.our-goal{font-family:var(--font-mono);font-size:9px;color:var(--white-muted);letter-spacing:1px}
+.goal-bar-track{height:3px;background:var(--bg);margin-top:8px;border:1px solid var(--border)}
+.goal-bar-fill{height:100%;background:var(--red);width:55.56%}
+
+/* quick paste */
+.paste-area{width:100%;background:var(--bg);border:1px dashed var(--border-red);color:var(--white);font-family:var(--font-body);font-size:11px;padding:10px;resize:vertical;outline:none;min-height:90px;line-height:1.6;transition:border-color .2s}
+.paste-area:focus{border-color:var(--red-bright);border-style:solid}
+.paste-area::placeholder{color:var(--white-muted);font-size:10px}
+
+/* competitor list */
+.comp-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all .15s}
+.comp-item:last-child{border-bottom:none}
+.comp-item:hover{padding-left:4px}
+.comp-avatar{width:28px;height:28px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:10px;font-weight:800;color:var(--white-muted);flex-shrink:0}
+.comp-handle{font-family:var(--font-mono);font-size:10px;color:var(--white-dim)}
+.comp-status{margin-left:auto;font-family:var(--font-mono);font-size:8px;padding:2px 6px}
+.comp-status.pulled{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,230,118,.2)}
+.comp-status.pending{background:var(--white-faint);color:var(--white-muted);border:1px solid var(--border)}
+.comp-status.running{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,214,0,.2);animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* run schedule */
+.sched-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.sched-row:last-child{border-bottom:none}
+.sched-day{font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:1px}
+.sched-time{font-family:var(--font-mono);font-size:9px;color:var(--white-muted)}
+.sched-toggle{width:32px;height:18px;background:var(--red-dim);border:1px solid var(--border-red);border-radius:9px;position:relative;cursor:pointer;transition:background .2s}
+.sched-toggle.on{background:var(--red)}
+.sched-toggle-knob{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s}
+.sched-toggle.on .sched-toggle-knob{left:16px}
+
+/* ── Right panel ── */
+#right{padding:24px;overflow-y:auto}
+
+/* report header */
+.report-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.report-title{font-family:var(--font-display);font-size:32px;font-weight:900;letter-spacing:3px;line-height:1}
+.report-date{font-family:var(--font-mono);font-size:10px;color:var(--white-muted);margin-top:4px;letter-spacing:1px}
+.report-week-badge{font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:2px;padding:6px 14px;border:1px solid var(--border-red);color:var(--red-bright);background:var(--red-dim)}
+
+/* ── Scoreboard ── */
+.scoreboard{margin-bottom:24px}
+.scoreboard-title{font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--white-muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.scoreboard-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.score-grid{display:grid;grid-template-columns:1fr repeat(4,1fr);gap:1px;background:var(--border)}
+.score-header{background:var(--bg3);padding:8px 12px;font-family:var(--font-mono);font-size:8px;letter-spacing:1.5px;color:var(--white-muted);text-transform:uppercase}
+.score-cell{background:var(--bg2);padding:10px 12px;font-size:12px;vertical-align:middle}
+.score-cell.account-cell{display:flex;align-items:center;gap:8px}
+.score-handle{font-family:var(--font-mono);font-size:10px;color:var(--white)}
+.score-num{font-family:var(--font-display);font-size:15px;font-weight:800;color:var(--white-dim)}
+.score-num.best{color:var(--green)}
+.score-num.ours{color:var(--red-bright)}
+.score-num.loading{color:var(--white-muted);font-size:10px;animation:blink .8s infinite}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;font-family:var(--font-display);font-size:10px;font-weight:900}
+.rank-1{background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,214,0,.3)}
+.rank-us{background:var(--red-dim);color:var(--red-bright);border:1px solid var(--border-red)}
+.rank-other{background:var(--white-faint);color:var(--white-muted);border:1px solid var(--border)}
+
+/* ── Content breakdown ── */
+.breakdown-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.breakdown-card{background:var(--bg2);border:1px solid var(--border);padding:14px;position:relative;overflow:hidden;transition:border-color .2s}
+.breakdown-card:hover{border-color:var(--border-red)}
+.breakdown-card.ours{border-color:var(--border-red)}
+.breakdown-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--border)}
+.breakdown-card.ours::before{background:var(--red)}
+.breakdown-card.leader::before{background:var(--green)}
+.bc-handle{font-family:var(--font-mono);font-size:9px;color:var(--white-muted);margin-bottom:10px;letter-spacing:1px}
+.bc-stat{margin-bottom:8px}
+.bc-stat-val{font-family:var(--font-display);font-size:20px;font-weight:900;line-height:1}
+.bc-stat-lbl{font-family:var(--font-mono);font-size:8px;color:var(--white-muted);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.content-type-bar{display:flex;gap:2px;margin-top:10px;height:4px}
+.ctb-reel{background:var(--red-bright);flex:var(--r,1)}
+.ctb-carousel{background:var(--yellow);flex:var(--c,1)}
+.ctb-photo{background:#5B8DEF;flex:var(--p,1)}
+.ct-legend{display:flex;gap:8px;margin-top:5px;flex-wrap:wrap}
+.ct-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:3px}
+
+/* ── Battle report ── */
+.battle-section{margin-bottom:24px}
+.battle-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.battle-icon{width:28px;height:28px;background:var(--red-dim);border:1px solid var(--border-red);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.battle-label{font-family:var(--font-display);font-size:14px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+
+.intel-card{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--red);padding:14px 16px;margin-bottom:8px}
+.intel-card.win{border-left-color:var(--green)}
+.intel-card.watch{border-left-color:var(--yellow)}
+.intel-tag{font-family:var(--font-display);font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.intel-tag.threat{color:var(--red-bright)}
+.intel-tag.win{color:var(--green)}
+.intel-tag.watch{color:var(--yellow)}
+.intel-body{font-size:12px;line-height:1.65;color:var(--white-dim);white-space:pre-wrap}
+.intel-body strong{color:var(--white);font-weight:600}
+
+/* ── Action plan ── */
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.action-card{background:var(--bg2);border:1px solid var(--border);padding:14px}
+.action-num{font-family:var(--font-display);font-size:36px;font-weight:900;color:var(--red-dim);line-height:1;margin-bottom:6px}
+.action-num.done{color:rgba(0,230,118,.15)}
+.action-title{font-family:var(--font-display);font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--white);margin-bottom:4px}
+.action-body{font-size:11px;color:var(--white-muted);line-height:1.6}
+
+/* ── Empty / loading states ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center;gap:12px}
+.empty-icon{font-size:48px;opacity:.15}
+.empty-title{font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:3px;color:var(--white-muted)}
+.empty-sub{font-family:var(--font-mono);font-size:10px;color:var(--white-muted);letter-spacing:1px;line-height:1.8;max-width:300px}
+
+.loading-state{display:flex;flex-direction:column;gap:16px;padding:8px 0}
+.loading-bar{height:12px;background:var(--bg3);border:1px solid var(--border);position:relative;overflow:hidden}
+.loading-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(211,47,47,.2),transparent);animation:sweep 1.4s infinite}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.loading-label{font-family:var(--font-mono);font-size:9px;color:var(--white-muted);letter-spacing:1px;margin-top:-8px}
+
+/* ── Log stream ── */
+#log-stream{font-family:var(--font-mono);font-size:9px;color:var(--white-muted);line-height:1.8;max-height:80px;overflow-y:auto;padding:8px;background:var(--bg);border:1px solid var(--border);margin-top:8px}
+#log-stream:empty{display:none}
+.log-line-ok{color:var(--green)}
+.log-line-run{color:var(--yellow)}
+.log-line-err{color:var(--red-bright)}
+
+/* ── Inputs ── */
+.j-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--white);font-family:var(--font-body);font-size:12px;padding:8px 10px;outline:none;transition:border-color .2s}
+.j-input:focus{border-color:var(--border-red)}
+.j-btn{font-family:var(--font-display);font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:8px 14px;background:var(--red-dim);border:1px solid var(--border-red);color:var(--red-bright);cursor:pointer;transition:all .2s;width:100%;margin-top:6px}
+.j-btn:hover{background:rgba(211,47,47,.22)}
+.j-btn.ghost{background:var(--white-faint);border-color:var(--border);color:var(--white-muted)}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border-red);border-left:3px solid var(--red);padding:12px 16px;font-size:12px;color:var(--white-dim);z-index:2000;min-width:240px;transform:translateY(60px);opacity:0;transition:all .3s}
+#toast.show{transform:translateY(0);opacity:1}
+#toast strong{display:block;font-family:var(--font-display);font-size:10px;font-weight:800;letter-spacing:2px;color:var(--white);margin-bottom:2px;text-transform:uppercase}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-red)}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="hdr">
+  <div class="hdr-left">
+    <div class="logo">JV</div>
+    <div>
+      <div class="hdr-title">SOCIAL INTEL</div>
+      <div class="hdr-sub">Battle report · @fitclubct vs competition</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="schedule-pill"><span class="dot-pulse"></span>SAT + SUN AUTO-RUN</div>
+    <button class="run-btn" onclick="runFullReport()">⚡ RUN REPORT NOW</button>
+  </div>
+</div>
+
+<div id="layout">
+
+  <!-- Left panel -->
+  <div id="left">
+
+    <!-- Our account -->
+    <div class="panel-section">
+      <div class="panel-label">Our Account</div>
+      <div class="our-account">
+        <div class="our-handle">@fitclubct</div>
+        <div class="our-followers" id="our-followers">2,778</div>
+        <div class="our-goal">Goal: 5,000 followers</div>
+        <div class="goal-bar-track"><div class="goal-bar-fill" id="goal-bar"></div></div>
+      </div>
+
+      <!-- Quick paste -->
+      <div class="panel-label" style="margin-top:12px">Paste Your IG Insights</div>
+      <div style="font-family:var(--font-mono);font-size:8px;color:var(--white-muted);margin-bottom:6px;line-height:1.6">
+        Open Instagram app → Insights → paste here.<br>Takes 60 seconds every weekend.
+      </div>
+      <textarea class="paste-area" id="our-insights" placeholder="Accounts reached: X&#10;Impressions: X&#10;Followers gained: +X&#10;Profile visits: X&#10;Top post: X views&#10;Reels views: X&#10;Story views: X&#10;...paste whatever you see"></textarea>
+      <button class="j-btn" onclick="saveOurInsights()">SAVE INSIGHTS</button>
+      <div id="log-stream"></div>
+    </div>
+
+    <!-- Competitors -->
+    <div class="panel-section" style="flex:1">
+      <div class="panel-label">Competitor Accounts</div>
+      <div id="comp-list">
+        <div class="comp-item">
+          <div class="comp-avatar">KM</div>
+          <div>
+            <div class="comp-handle">@kmktraining</div>
+          </div>
+          <span class="comp-status pending" id="status-kmk">PENDING</span>
+        </div>
+        <div class="comp-item">
+          <div class="comp-avatar">AS</div>
+          <div>
+            <div class="comp-handle">@asaptrainingct</div>
+          </div>
+          <span class="comp-status pending" id="status-asap">PENDING</span>
+        </div>
+        <div class="comp-item">
+          <div class="comp-avatar">D1</div>
+          <div>
+            <div class="comp-handle">@d1fairfield</div>
+          </div>
+          <span class="comp-status pending" id="status-d1">PENDING</span>
+        </div>
+        <div class="comp-item">
+          <div class="comp-avatar">GA</div>
+          <div>
+            <div class="comp-handle">@grindathleteperformance</div>
+          </div>
+          <span class="comp-status pending" id="status-grind">PENDING</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="panel-section">
+      <div class="panel-label">Auto-Run Schedule</div>
+      <div class="sched-row">
+        <div>
+          <div class="sched-day">SATURDAY</div>
+          <div class="sched-time">8:00 AM — Mid-week check</div>
+        </div>
+        <div class="sched-toggle on" id="toggle-sat" onclick="toggleSched(this)">
+          <div class="sched-toggle-knob"></div>
+        </div>
+      </div>
+      <div class="sched-row">
+        <div>
+          <div class="sched-day">SUNDAY</div>
+          <div class="sched-time">8:00 AM — Full battle report</div>
+        </div>
+        <div class="sched-toggle on" id="toggle-sun" onclick="toggleSched(this)">
+          <div class="sched-toggle-knob"></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-family:var(--font-mono);font-size:8px;color:var(--white-muted);line-height:1.7">
+        Bookmark this page. Keep it open on Sat/Sun and Jarvis runs automatically at 8AM and sends the Monday SMS report.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right panel -->
+  <div id="right">
+
+    <!-- Empty state (shown before first run) -->
+    <div id="empty-state" class="empty-state">
+      <div class="empty-icon">⚔</div>
+      <div class="empty-title">NO REPORT YET</div>
+      <div class="empty-sub">
+        Hit ⚡ RUN REPORT NOW to pull competitor data and generate this week's battle report.<br><br>
+        Runs automatically every Saturday + Sunday at 8AM when this page is open.
+      </div>
+      <button class="j-btn" style="width:auto;padding:10px 24px;margin-top:8px" onclick="runFullReport()">⚡ RUN FIRST REPORT</button>
+    </div>
+
+    <!-- Report output (hidden until run) -->
+    <div id="report-output" style="display:none">
+
+      <!-- Report header -->
+      <div class="report-header">
+        <div>
+          <div class="report-title">BATTLE REPORT</div>
+          <div class="report-date" id="report-date-label">—</div>
+        </div>
+        <div class="report-week-badge" id="report-week-label">WEEK —</div>
+      </div>
+
+      <!-- Scoreboard -->
+      <div class="scoreboard">
+        <div class="scoreboard-title">SCOREBOARD — THIS WEEK</div>
+        <div class="score-grid" id="scoreboard-grid">
+          <!-- headers -->
+          <div class="score-header">ACCOUNT</div>
+          <div class="score-header">FOLLOWERS</div>
+          <div class="score-header">POSTS/WK</div>
+          <div class="score-header">EST. REACH</div>
+          <div class="score-header">CONTENT MIX</div>
+          <!-- rows injected by JS -->
+        </div>
+      </div>
+
+      <!-- Content type breakdown -->
+      <div class="scoreboard-title" style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--white-muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        CONTENT BREAKDOWN
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
+      <div class="breakdown-grid" id="breakdown-grid"></div>
+
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;margin-bottom:24px;font-family:var(--font-mono);font-size:9px;color:var(--white-muted)">
+        <div><span class="ct-dot" style="background:var(--red-bright)"></span>Reels</div>
+        <div><span class="ct-dot" style="background:var(--yellow)"></span>Carousels</div>
+        <div><span class="ct-dot" style="background:#5B8DEF"></span>Photos</div>
+      </div>
+
+      <!-- Intel / analysis -->
+      <div class="battle-section">
+        <div class="battle-header">
+          <div class="battle-icon">⚠</div>
+          <div class="battle-label">Threats This Week</div>
+        </div>
+        <div id="threats-output"></div>
+      </div>
+
+      <div class="battle-section">
+        <div class="battle-header">
+          <div class="battle-icon" style="background:var(--green-dim);border-color:rgba(0,230,118,.2)">✓</div>
+          <div class="battle-label" style="color:var(--green)">Our Wins</div>
+        </div>
+        <div id="wins-output"></div>
+      </div>
+
+      <!-- Action plan -->
+      <div class="scoreboard-title" style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--white-muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        THIS WEEK'S ATTACK PLAN
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
+      <div class="action-grid" id="action-plan-grid"></div>
+
+      <!-- Full Jarvis analysis -->
+      <div class="scoreboard-title" style="font-family:var(--font-mono);font-size:9px;letter-spacing:2px;color:var(--white-muted);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        FULL JARVIS ANALYSIS
+        <span style="flex:1;height:1px;background:var(--border);display:block"></span>
+      </div>
+      <div id="full-analysis" class="intel-card" style="border-left-color:var(--red)">
+        <div class="intel-body" id="full-analysis-text"></div>
+      </div>
+
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading-state" style="display:none;padding:24px 0">
+      <div class="loading-state">
+        <div style="font-family:var(--font-display);font-size:13px;font-weight:800;letter-spacing:2px;color:var(--white-muted);margin-bottom:4px" id="loading-label">INITIALIZING SCAN...</div>
+        <div class="loading-bar" style="width:100%"></div>
+        <div class="loading-label" id="loading-sub">Jarvis pulling competitor data</div>
+        <div class="loading-bar" style="width:75%;margin-top:4px"></div>
+        <div class="loading-label">Analyzing content mix</div>
+        <div class="loading-bar" style="width:50%;margin-top:4px"></div>
+        <div class="loading-label">Generating battle strategy</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"><strong id="t-title">—</strong><span id="t-msg">—</span></div>
+
+<script>
+// ─────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────
+const ACCOUNTS = [
+  { handle: 'fitclubct',              avatar: 'FC', ours: true  },
+  { handle: 'kmktraining',            avatar: 'KM', ours: false },
+  { handle: 'asaptrainingct',         avatar: 'AS', ours: false },
+  { handle: 'd1fairfield',            avatar: 'D1', ours: false },
+  { handle: 'grindathleteperformance',avatar: 'GA', ours: false }
+];
+
+const SYS = `You are Jarvis, the competitive intelligence AI for FitClub CT (@fitclubct) — a premium strength and conditioning gym in Fairfield, CT. Owner: Austin (Certified Athletic Trainer). Competitors on Instagram: @kmktraining, @asaptrainingct, @d1fairfield, @grindathleteperformance. FitClub CT targets lacrosse and soccer athletes ages 12-18 in Fairfield County, CT. Current followers: 2,778. Goal: 5,000. Be ruthlessly direct, tactical, and specific. No generic advice.`;
+
+let ourInsights = '';
+let reportData = {};
+let scheduleTimers = {};
+
+// ─────────────────────────────────────────────────────
+// LOGGING
+// ─────────────────────────────────────────────────────
+function log(msg, type = 'run') {
+  const el = document.getElementById('log-stream');
+  const line = document.createElement('div');
+  line.className = 'log-line-' + type;
+  const ts = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  line.textContent = `[${ts}] ${msg}`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ─────────────────────────────────────────────────────
+// API
+// ─────────────────────────────────────────────────────
+async function callJarvis(prompt, maxTokens = 1000) {
+  const r = await fetch('https://jarvis-proxy.austinbc2016.workers.dev', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      system: SYS,
+      tools: [{
+        type: 'web_search_20250305',
+        name: 'web_search'
+      }],
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const d = await r.json();
+  if (!d.content) throw new Error('API error');
+  // Extract text from content blocks
+  return d.content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+}
+
+// ─────────────────────────────────────────────────────
+// PULL ONE COMPETITOR
+// ─────────────────────────────────────────────────────
+async function pullCompetitor(account) {
+  const statusEl = document.getElementById('status-' + account.handle.split('training')[0].replace('grindathlete','grind').replace('asap','asap').replace('d1fairfield','d1'));
+  if (statusEl) { statusEl.className = 'comp-status running'; statusEl.textContent = 'SCANNING'; }
+
+  log(`Searching Instagram data for @${account.handle}...`);
+
+  const prompt = `Search Instagram for the account @${account.handle}. Find and report ONLY publicly visible data:
+1. Current follower count (approximate is fine)
+2. How many posts they made in the last 7 days (count what's visible on their grid)
+3. What types of content they posted this week: Reels, carousels, or photos? How many of each?
+4. What topics/subjects are their recent posts about?
+5. Estimated engagement level (high/medium/low based on what you can observe)
+6. Any notable content or campaigns this week?
+
+Search their Instagram profile directly. Report numbers as specifically as possible. If exact numbers aren't available, give your best estimate based on what you find. Format as plain text.`;
+
+  try {
+    const result = await callJarvis(prompt, 600);
+    if (statusEl) { statusEl.className = 'comp-status pulled'; statusEl.textContent = 'PULLED'; }
+    log(`@${account.handle} — data retrieved`, 'ok');
+    return result;
+  } catch (e) {
+    if (statusEl) { statusEl.className = 'comp-status pending'; statusEl.textContent = 'ERROR'; }
+    log(`@${account.handle} — search failed`, 'err');
+    return `Could not retrieve data for @${account.handle} this run.`;
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// PARSE COMPETITOR DATA → STRUCTURED
+// ─────────────────────────────────────────────────────
+async function parseCompData(handle, rawText) {
+  const prompt = `Extract structured data from this Instagram research about @${handle}. Return ONLY a JSON object with these exact keys:
+{
+  "followers": number or null,
+  "posts_this_week": number or null,
+  "reels": number or null,
+  "carousels": number or null,
+  "photos": number or null,
+  "topics": "brief description of what they posted about",
+  "engagement": "high/medium/low",
+  "notable": "one sentence about anything notable"
+}
+
+Raw data:
+${rawText}
+
+Return ONLY the JSON, no other text.`;
+
+  try {
+    const r = await fetch('https://jarvis-proxy.austinbc2016.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: 'Extract data and return only valid JSON. No markdown, no explanation.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    const text = d.content[0]?.text || '{}';
+    return JSON.parse(text.replace(/```json|```/g, '').trim());
+  } catch (e) {
+    return { followers: null, posts_this_week: null, reels: null, carousels: null, photos: null, topics: 'Unknown', engagement: 'unknown', notable: 'Data unavailable' };
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// BUILD SCOREBOARD
+// ─────────────────────────────────────────────────────
+function buildScoreboard(data) {
+  const grid = document.getElementById('scoreboard-grid');
+  // Remove old rows (keep 5 headers)
+  while (grid.children.length > 5) grid.removeChild(grid.lastChild);
+
+  // Find bests for highlighting
+  const allFollowers = Object.values(data).map(d => d.followers).filter(Boolean);
+  const allPosts = Object.values(data).map(d => d.posts_this_week).filter(Boolean);
+  const maxFollowers = Math.max(...allFollowers);
+  const maxPosts = Math.max(...allPosts);
+
+  // Sort: our account first, then by followers desc
+  const sorted = [...ACCOUNTS].sort((a, b) => {
+    if (a.ours) return -1;
+    if (b.ours) return 1;
+    const fa = data[a.handle]?.followers || 0;
+    const fb = data[b.handle]?.followers || 0;
+    return fb - fa;
+  });
+
+  let rank = 1;
+  sorted.forEach(account => {
+    const d = data[account.handle] || {};
+    const isOurs = account.ours;
+
+    // Account cell
+    const ac = document.createElement('div');
+    ac.className = 'score-cell account-cell';
+    const rankBadge = document.createElement('span');
+    rankBadge.className = 'rank-badge ' + (isOurs ? 'rank-us' : (rank === 1 ? 'rank-1' : 'rank-other'));
+    rankBadge.textContent = isOurs ? '★' : rank;
+    if (!isOurs) rank++;
+    const handleEl = document.createElement('div');
+    handleEl.innerHTML = `<div class="score-handle">@${account.handle}</div>`;
+    ac.appendChild(rankBadge);
+    ac.appendChild(handleEl);
+    grid.appendChild(ac);
+
+    // Followers
+    const fc = document.createElement('div');
+    fc.className = 'score-cell';
+    const fv = document.createElement('div');
+    fv.className = 'score-num' + (isOurs ? ' ours' : (d.followers === maxFollowers ? ' best' : ''));
+    fv.textContent = d.followers ? d.followers.toLocaleString() : '—';
+    fc.appendChild(fv);
+    grid.appendChild(fc);
+
+    // Posts/week
+    const pc = document.createElement('div');
+    pc.className = 'score-cell';
+    const pv = document.createElement('div');
+    pv.className = 'score-num' + (isOurs ? ' ours' : (d.posts_this_week === maxPosts ? ' best' : ''));
+    pv.textContent = d.posts_this_week != null ? d.posts_this_week : '—';
+    pc.appendChild(pv);
+    grid.appendChild(pc);
+
+    // Est. reach (rough estimate based on followers × engagement multiplier)
+    const rc = document.createElement('div');
+    rc.className = 'score-cell';
+    const rv = document.createElement('div');
+    rv.className = 'score-num' + (isOurs ? ' ours' : '');
+    const engMult = d.engagement === 'high' ? 0.15 : d.engagement === 'medium' ? 0.08 : 0.04;
+    const reach = d.followers ? Math.round(d.followers * engMult) : null;
+    rv.textContent = reach ? (reach > 1000 ? (reach/1000).toFixed(1) + 'K' : reach) : '—';
+    rc.appendChild(rv);
+    grid.appendChild(rc);
+
+    // Content mix
+    const cc = document.createElement('div');
+    cc.className = 'score-cell';
+    const total = (d.reels || 0) + (d.carousels || 0) + (d.photos || 0);
+    if (total > 0) {
+      const bar = document.createElement('div');
+      bar.className = 'content-type-bar';
+      bar.innerHTML = `
+        <div class="ctb-reel" style="--r:${d.reels||0}"></div>
+        <div class="ctb-carousel" style="--c:${d.carousels||0}"></div>
+        <div class="ctb-photo" style="--p:${d.photos||0}"></div>`;
+      cc.appendChild(bar);
+      const legend = document.createElement('div');
+      legend.className = 'ct-legend';
+      legend.innerHTML = `<span style="font-family:var(--font-mono);font-size:8px;color:var(--white-muted)">${d.reels||0}R ${d.carousels||0}C ${d.photos||0}P</span>`;
+      cc.appendChild(legend);
+    } else {
+      cc.innerHTML = '<div class="score-num score-num loading">—</div>';
+    }
+    grid.appendChild(cc);
+  });
+}
+
+// ─────────────────────────────────────────────────────
+// BUILD BREAKDOWN CARDS
+// ─────────────────────────────────────────────────────
+function buildBreakdown(data) {
+  const grid = document.getElementById('breakdown-grid');
+  grid.innerHTML = '';
+
+  const allPosts = Object.values(data).map(d => d.posts_this_week || 0);
+  const maxPosts = Math.max(...allPosts);
+
+  ACCOUNTS.forEach(account => {
+    const d = data[account.handle] || {};
+    const isOurs = account.ours;
+    const isLeader = !isOurs && d.posts_this_week === maxPosts && maxPosts > 0;
+
+    const card = document.createElement('div');
+    card.className = 'breakdown-card' + (isOurs ? ' ours' : (isLeader ? ' leader' : ''));
+
+    const total = (d.reels || 0) + (d.carousels || 0) + (d.photos || 0);
+    const reelPct = total ? Math.round((d.reels||0)/total*100) : 0;
+
+    card.innerHTML = `
+      <div class="bc-handle">@${account.handle}${isOurs ? ' ← US' : ''}</div>
+      <div class="bc-stat">
+        <div class="bc-stat-val" style="color:${isOurs ? 'var(--red-bright)' : (isLeader ? 'var(--green)' : 'var(--white)')}">${d.posts_this_week ?? '—'}</div>
+        <div class="bc-stat-lbl">posts this week</div>
+      </div>
+      <div class="bc-stat">
+        <div class="bc-stat-val" style="font-size:14px;color:var(--white-dim)">${d.followers ? d.followers.toLocaleString() : '—'}</div>
+        <div class="bc-stat-lbl">followers</div>
+      </div>
+      <div class="content-type-bar" style="margin-top:10px">
+        <div class="ctb-reel" style="--r:${d.reels||0.1}"></div>
+        <div class="ctb-carousel" style="--c:${d.carousels||0.1}"></div>
+        <div class="ctb-photo" style="--p:${d.photos||0.1}"></div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:8px;color:var(--white-muted);margin-top:5px">${reelPct}% Reels · ${d.engagement || '—'} eng.</div>
+      ${d.topics ? `<div style="font-family:var(--font-mono);font-size:8px;color:var(--white-muted);margin-top:6px;line-height:1.5">${d.topics}</div>` : ''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ─────────────────────────────────────────────────────
+// GENERATE BATTLE ANALYSIS
+// ─────────────────────────────────────────────────────
+async function generateBattleAnalysis(allData, ourInsights) {
+  log('Generating battle strategy...', 'run');
+
+  const summary = Object.entries(allData).map(([handle, d]) =>
+    `@${handle}: ${d.followers || '?'} followers, ${d.posts_this_week ?? '?'} posts this week (${d.reels||0} reels, ${d.carousels||0} carousels, ${d.photos||0} photos), engagement: ${d.engagement || 'unknown'}, topics: ${d.topics || 'unknown'}`
+  ).join('\n');
+
+  const prompt = `Here is this week's competitive Instagram data for FitClub CT (@fitclubct, 2,778 followers) and all competitors:
+
+${summary}
+
+${ourInsights ? `Our Instagram Insights this week:\n${ourInsights}` : 'Our own insights not yet pasted.'}
+
+Generate a BATTLE REPORT with these sections:
+
+THREATS: What are the top 2-3 competitor moves this week that we need to counter? Be specific — name the account, what they did, why it's a threat.
+
+WINS: What advantages do we have right now? What are they NOT doing that we can exploit?
+
+ATTACK PLAN: Give me exactly 4 specific tactical actions for this coming week to beat these competitors on Instagram. Each action: one title (5 words max) and 2-sentence explanation. Number them 1-4.
+
+FULL ANALYSIS: One cohesive paragraph, 100-150 words, sharp competitive breakdown of where FitClub CT stands and the single most important thing to do this week.
+
+Use headers exactly as: THREATS:, WINS:, ATTACK PLAN:, FULL ANALYSIS:`;
+
+  return await callJarvis(prompt, 1200);
+}
+
+// ─────────────────────────────────────────────────────
+// PARSE BATTLE ANALYSIS INTO SECTIONS
+// ─────────────────────────────────────────────────────
+function parseBattleAnalysis(text) {
+  const sections = { threats: '', wins: '', attack: '', full: '' };
+
+  const parts = text.split(/THREATS:|WINS:|ATTACK PLAN:|FULL ANALYSIS:/i);
+  if (parts.length >= 5) {
+    sections.threats = parts[1].trim();
+    sections.wins = parts[2].trim();
+    sections.attack = parts[3].trim();
+    sections.full = parts[4].trim();
+  } else {
+    // fallback — put everything in full
+    sections.full = text;
+  }
+  return sections;
+}
+
+function renderThreats(text) {
+  const el = document.getElementById('threats-output');
+  const items = text.split(/\n\n+/).filter(s => s.trim());
+  el.innerHTML = items.map(item =>
+    `<div class="intel-card"><div class="intel-tag threat">⚠ THREAT</div><div class="intel-body">${item.replace(/\n/g,'<br>')}</div></div>`
+  ).join('') || `<div class="intel-card"><div class="intel-body">${text.replace(/\n/g,'<br>')}</div></div>`;
+}
+
+function renderWins(text) {
+  const el = document.getElementById('wins-output');
+  const items = text.split(/\n\n+/).filter(s => s.trim());
+  el.innerHTML = items.map(item =>
+    `<div class="intel-card win"><div class="intel-tag win">✓ WIN</div><div class="intel-body">${item.replace(/\n/g,'<br>')}</div></div>`
+  ).join('') || `<div class="intel-card win"><div class="intel-body">${text.replace(/\n/g,'<br>')}</div></div>`;
+}
+
+function renderActionPlan(text) {
+  const grid = document.getElementById('action-plan-grid');
+  grid.innerHTML = '';
+  // Try to split by numbered items
+  const items = text.split(/(?=\b[1-4]\b[\.\)]?\s)/).filter(s => s.trim());
+  const colors = ['', '', 'done', 'done'];
+  items.slice(0, 4).forEach((item, i) => {
+    const lines = item.replace(/^[1-4][\.\)]?\s*/, '').trim().split('\n');
+    const title = lines[0] || 'Action ' + (i+1);
+    const body = lines.slice(1).join(' ').trim();
+    const card = document.createElement('div');
+    card.className = 'action-card';
+    card.innerHTML = `
+      <div class="action-num ${colors[i]}">${String(i+1).padStart(2,'0')}</div>
+      <div class="action-title">${title}</div>
+      <div class="action-body">${body || item.replace(/^[1-4][\.\)]?\s*/, '')}</div>`;
+    grid.appendChild(card);
+  });
+  // If parsing failed, just show the raw text
+  if (items.length === 0) {
+    grid.innerHTML = `<div class="intel-card" style="grid-column:span 2"><div class="intel-body">${text.replace(/\n/g,'<br>')}</div></div>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────
+// MAIN RUN
+// ─────────────────────────────────────────────────────
+async function runFullReport() {
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('report-output').style.display = 'none';
+  document.getElementById('loading-state').style.display = 'block';
+
+  const now = new Date();
+  const weekNum = Math.ceil(now.getDate() / 7);
+  document.getElementById('report-date-label').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('report-week-label').textContent =
+    `WEEK ${now.getMonth() + 1}.${weekNum}`;
+
+  log('Battle report initiated...', 'run');
+
+  // Reset competitor statuses
+  ['kmk','asap','d1','grind'].forEach(id => {
+    const el = document.getElementById('status-' + id);
+    if (el) { el.className = 'comp-status running'; el.textContent = 'SCANNING'; }
+  });
+
+  // Pull competitor data (parallel)
+  const competitors = ACCOUNTS.filter(a => !a.ours);
+  const rawResults = await Promise.all(competitors.map(a => pullCompetitor(a)));
+
+  // Parse all raw results into structured data
+  document.getElementById('loading-label').textContent = 'PARSING DATA...';
+  const structuredResults = await Promise.all(
+    competitors.map((a, i) => parseCompData(a.handle, rawResults[i]))
+  );
+
+  // Build report data object
+  const allData = {};
+  competitors.forEach((a, i) => { allData[a.handle] = structuredResults[i]; });
+
+  // Add our own account
+  const ourFollowers = parseInt(document.getElementById('our-followers').textContent.replace(/,/g, '')) || 2778;
+  allData['fitclubct'] = {
+    followers: ourFollowers,
+    posts_this_week: null,
+    reels: null,
+    carousels: null,
+    photos: null,
+    topics: 'Our content',
+    engagement: 'medium',
+    notable: 'Our account'
+  };
+
+  // Build visual components
+  document.getElementById('loading-label').textContent = 'BUILDING SCOREBOARD...';
+  buildScoreboard(allData);
+  buildBreakdown(allData);
+
+  // Generate battle analysis
+  document.getElementById('loading-label').textContent = 'GENERATING BATTLE STRATEGY...';
+  ourInsights = document.getElementById('our-insights').value.trim();
+  const battleText = await generateBattleAnalysis(allData, ourInsights);
+
+  // Parse and render sections
+  const sections = parseBattleAnalysis(battleText);
+  renderThreats(sections.threats || 'No specific threats identified this run.');
+  renderWins(sections.wins || 'Paste your IG Insights to get win analysis.');
+  renderActionPlan(sections.attack || battleText);
+  document.getElementById('full-analysis-text').textContent = sections.full || battleText;
+
+  // Show report
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('report-output').style.display = 'block';
+
+  log('Report complete ✓', 'ok');
+  showToast('REPORT READY', 'Battle report generated — ' + now.toLocaleTimeString());
+  reportData = allData;
+}
+
+// ─────────────────────────────────────────────────────
+// OUR INSIGHTS SAVE
+// ─────────────────────────────────────────────────────
+function saveOurInsights() {
+  ourInsights = document.getElementById('our-insights').value.trim();
+  if (!ourInsights) { showToast('PASTE DATA FIRST', 'Open IG app → Insights and paste'); return; }
+  const match = ourInsights.match(/(\d[\d,]*)\s*(?:new\s*)?followers?/i);
+  if (match) {
+    const gained = parseInt(match[1].replace(/,/g,''));
+    const current = parseInt(document.getElementById('our-followers').textContent.replace(/,/g,'')) || 2778;
+    const newTotal = current + gained;
+    document.getElementById('our-followers').textContent = newTotal.toLocaleString();
+    const pct = Math.min((newTotal / 5000) * 100, 100);
+    document.getElementById('goal-bar').style.width = pct + '%';
+  }
+  log('Our IG insights saved ✓', 'ok');
+  showToast('INSIGHTS SAVED', 'Will be included in next battle report');
+}
+
+// ─────────────────────────────────────────────────────
+// SCHEDULE
+// ─────────────────────────────────────────────────────
+function toggleSched(el) {
+  el.classList.toggle('on');
+}
+
+function checkSchedule() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun, 6=Sat
+  const hour = now.getHours();
+  const min = now.getMinutes();
+  const isSat = day === 6;
+  const isSun = day === 0;
+  const isRunTime = hour === 8 && min === 0;
+
+  const satOn = document.getElementById('toggle-sat')?.classList.contains('on');
+  const sunOn = document.getElementById('toggle-sun')?.classList.contains('on');
+
+  if (isRunTime) {
+    if (isSat && satOn) { log('Saturday auto-run triggered', 'run'); runFullReport(); }
+    if (isSun && sunOn) { log('Sunday auto-run triggered', 'run'); runFullReport(); }
+  }
+}
+
+// Check every minute
+setInterval(checkSchedule, 60000);
+
+// ─────────────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────────────
+function showToast(title, msg) {
+  document.getElementById('t-title').textContent = title;
+  document.getElementById('t-msg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ─────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────
+log('Jarvis Social Intel initialized', 'ok');
+log('Waiting for manual run or Saturday/Sunday 8AM auto-trigger', 'run');
+</script>
+
+<!-- PWA Install Banner -->
+<div id="pwa-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#0F0F0F;border-top:1px solid rgba(211,47,47,0.4);padding:14px 18px;z-index:9998;display:none;align-items:center;gap:14px">
+  <div style="width:36px;height:36px;background:#D32F2F;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;color:#fff;clip-path:polygon(0 0,100% 0,100% 72%,82% 100%,0 100%);flex-shrink:0">JV</div>
+  <div style="flex:1">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;color:#F0F0F0">INSTALL JARVIS</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(240,240,240,0.45);margin-top:2px">Tap Share → Add to Home Screen</div>
+  </div>
+  <button onclick="document.getElementById('pwa-banner').style.display='none';localStorage.setItem('jarvis-banner-dismissed','1')" style="background:none;border:1px solid rgba(240,240,240,0.15);color:rgba(240,240,240,0.4);font-size:16px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+</div>
+
+<script>
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Jarvis SW registered', reg.scope))
+      .catch(err => console.log('SW registration failed', err));
+  });
+}
+
+// Show iOS install banner if not already installed and not dismissed
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = window.navigator.standalone;
+const dismissed = localStorage.getItem('jarvis-banner-dismissed');
+
+if (isIOS && !isStandalone && !dismissed) {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const banner = document.getElementById('pwa-banner');
+      if (banner) banner.style.display = 'flex';
+    }, 2500);
+  });
+}
+
+// Listen for SW messages (e.g. Monday report trigger)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'MONDAY_REPORT') {
+      if (typeof showMondayReport === 'function') showMondayReport();
+    }
+  });
+}
+</script>
+</body>
+</html>
